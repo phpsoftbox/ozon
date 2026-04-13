@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @generated Ozon OpenAPI DTO
+ */
+
+namespace PhpSoftBox\Ozon\Dto\V1\WarehouseFbo;
+
+use PhpSoftBox\Ozon\Dto\OzonDtoInterface;
+use PhpSoftBox\Ozon\Dto\OzonDtoValue;
+
+final readonly class DraftGetWarehouseFboListResponseSearch implements OzonDtoInterface
+{
+    /**
+     * @param array<string, mixed> $extra
+     */
+    public function __construct(
+        public ?string $address,
+        public ?DraftGetWarehouseFboListResponseCoordinate $coordinates,
+        public ?string $name,
+        public ?int $warehouseId,
+        public ?DraftGetWarehouseFboListResponseWarehouseType $warehouseType,
+        public array $extra = [],
+    ) {
+    }
+
+    public static function fromArray(array $payload): static
+    {
+        return new self(
+            address: OzonDtoValue::string($payload['address'] ?? null),
+            coordinates: OzonDtoValue::object($payload['coordinates'] ?? null, DraftGetWarehouseFboListResponseCoordinate::class),
+            name: OzonDtoValue::string($payload['name'] ?? null),
+            warehouseId: OzonDtoValue::int($payload['warehouse_id'] ?? null),
+            warehouseType: OzonDtoValue::object($payload['warehouse_type'] ?? null, DraftGetWarehouseFboListResponseWarehouseType::class),
+            extra: OzonDtoValue::extra($payload, ['address', 'coordinates', 'name', 'warehouse_id', 'warehouse_type']),
+        );
+    }
+}
