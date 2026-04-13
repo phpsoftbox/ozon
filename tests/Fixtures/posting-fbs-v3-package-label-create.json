@@ -1,0 +1,6 @@
+{
+    "tasks": [
+        {"task_id": 123, "task_type": "big_label"},
+        {"task_id": 124, "task_type": "small_label"}
+    ]
+}

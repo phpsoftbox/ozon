@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.0",
+  "info": {"title": "DTO generation regression", "version": "1"},
+  "paths": {
+    "/v1/audit-fixture/list": {
+      "post": {
+        "responses": {
+          "200": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/AuditResponse"}}}}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuditResponse": {
+        "type": "object",
+        "properties": {
+          "items": {"items": {"$ref": "#/components/schemas/AuditItem"}},
+          "status": {"$ref": "#/components/schemas/AuditStatus"},
+          "statuses": {"type": "array", "items": {"$ref": "#/components/schemas/AuditStatus"}}
+        }
+      },
+      "AuditItem": {"type": "object", "properties": {"id": {"type": "integer"}}},
+      "AuditStatus": {"type": "string", "enum": ["NEW", "DONE"]}
+    }
+  }
+}

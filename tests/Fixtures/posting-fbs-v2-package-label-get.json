@@ -1,0 +1,12 @@
+{
+    "error": {"code": "", "message": ""},
+    "file_url": "https://cdn.ozon.ru/labels/123.pdf",
+    "status": {
+        "code": "completed",
+        "postings_count": 2,
+        "printed_postings_count": 1,
+        "unprinted_postings": [
+            {"posting_number": "00100162-3625-2", "message": "postings aren't ready"}
+        ]
+    }
+}
