@@ -123,6 +123,8 @@ final class OzonApiClient
 {
     private string $baseUrl;
     private readonly int $rateLimitMaxAttempts;
+    private readonly ?float $rateLimitMaxDelaySeconds;
+    private readonly ?float $rateLimitMaxTotalDelaySeconds;
     private readonly RetryableRequestPolicyInterface $rateLimitRequestPolicy;
     private readonly SleeperInterface $rateLimitSleeper;
 
@@ -140,11 +142,13 @@ final class OzonApiClient
     ) {
         $rateLimitRetry ??= new RateLimitRetryOptions();
 
-        $this->rateLimitMaxAttempts   = $rateLimitRetry->maxAttempts;
-        $this->rateLimitRequestPolicy = $rateLimitRetry->requestPolicy ?? new DefaultRetryableRequestPolicy();
-        $this->rateLimitSleeper       = $rateLimitRetry->sleeper ?? new NativeSleeper();
-        $this->onRateLimitRetry       = $rateLimitRetry->onRetry;
-        $this->baseUrl                = rtrim($apiBase, '/');
+        $this->rateLimitMaxAttempts          = $rateLimitRetry->maxAttempts;
+        $this->rateLimitMaxDelaySeconds      = $rateLimitRetry->maxDelaySeconds;
+        $this->rateLimitMaxTotalDelaySeconds = $rateLimitRetry->maxTotalDelaySeconds;
+        $this->rateLimitRequestPolicy        = $rateLimitRetry->requestPolicy ?? new DefaultRetryableRequestPolicy();
+        $this->rateLimitSleeper              = $rateLimitRetry->sleeper ?? new NativeSleeper();
+        $this->onRateLimitRetry              = $rateLimitRetry->onRetry;
+        $this->baseUrl                       = rtrim($apiBase, '/');
     }
 
     /**
@@ -690,6 +694,7 @@ final class OzonApiClient
     private function sendWithRateLimitRetry(RequestInterface $request, ?string $requestBody): ResponseInterface
     {
         $retryAllowed = $this->rateLimitRequestPolicy->allows($request);
+        $totalDelay   = 0.0;
 
         for ($attempt = 1; $attempt <= $this->rateLimitMaxAttempts; $attempt++) {
             $attemptRequest = $requestBody === null
@@ -710,6 +715,11 @@ final class OzonApiClient
             $providerDelay = $this->resolveProviderRetryDelay($response);
             $delay         = $providerDelay === null ? $fallbackDelay : max($fallbackDelay, $providerDelay);
 
+            // Задержку не обрезаем: ранний повтор противоречил бы заголовку. Вместо ожидания — последний ответ.
+            if ($this->exceedsDelayBudget($delay, $totalDelay)) {
+                return $response;
+            }
+
             $response->getBody()->close();
 
             if ($this->onRateLimitRetry !== null) {
@@ -723,9 +733,20 @@ final class OzonApiClient
             }
 
             $this->rateLimitSleeper->sleep($delay);
+            $totalDelay += $delay;
         }
 
         throw new OzonException('Ozon retry loop ended unexpectedly.');
+    }
+
+    private function exceedsDelayBudget(float $delay, float $totalDelay): bool
+    {
+        if ($this->rateLimitMaxDelaySeconds !== null && $delay > $this->rateLimitMaxDelaySeconds) {
+            return true;
+        }
+
+        return $this->rateLimitMaxTotalDelaySeconds !== null
+            && $totalDelay + $delay > $this->rateLimitMaxTotalDelaySeconds;
     }
 
     private function resolveProviderRetryDelay(ResponseInterface $response): ?float

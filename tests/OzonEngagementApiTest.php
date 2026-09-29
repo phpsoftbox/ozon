@@ -6,6 +6,7 @@ namespace PhpSoftBox\Ozon\Tests;
 
 use PhpSoftBox\Http\Message\Response;
 use PhpSoftBox\Ozon\Tests\Support\CreatesOzonClient;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class OzonEngagementApiTest extends TestCase
@@ -14,9 +15,8 @@ final class OzonEngagementApiTest extends TestCase
 
     /**
      * @param callable(object): mixed $invoke
-     *
-     * @dataProvider engagementRoutesProvider
      */
+    #[DataProvider('engagementRoutesProvider')]
     public function testEngagementRoutes(string $expectedPath, string $expectedMethod, callable $invoke): void
     {
         [$client, $httpClient] = $this->createClient(new Response(200, [], '{"result":{"ok":true}}'));

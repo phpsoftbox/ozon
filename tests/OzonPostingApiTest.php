@@ -8,6 +8,7 @@ use PhpSoftBox\Http\Message\Response;
 use PhpSoftBox\Ozon\Dto\V5\Posting\FbsPostingProductExemplarStatusV5Response;
 use PhpSoftBox\Ozon\Dto\V5\Posting\FbsPostingProductExemplarValidateV5Response;
 use PhpSoftBox\Ozon\Tests\Support\CreatesOzonClient;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class OzonPostingApiTest extends TestCase
@@ -552,9 +553,8 @@ final class OzonPostingApiTest extends TestCase
 
     /**
      * @param callable(object): void $invoke
-     *
-     * @dataProvider postingLegacyRoutesProvider
      */
+    #[DataProvider('postingLegacyRoutesProvider')]
     public function testPostingLegacyRoutes(string $expectedPath, callable $invoke): void
     {
         [$client, $httpClient] = $this->createClient(new Response(200, [], '{"result":{"ok":true}}'));
@@ -662,9 +662,8 @@ final class OzonPostingApiTest extends TestCase
 
     /**
      * @param callable(object): void $invoke
-     *
-     * @dataProvider supplyOrderV1RoutesProvider
      */
+    #[DataProvider('supplyOrderV1RoutesProvider')]
     public function testSupplyOrderV1Routes(string $expectedPath, callable $invoke): void
     {
         [$client, $httpClient] = $this->createClient(new Response(200, [], '{"result":{"ok":true}}'));
