@@ -26,6 +26,10 @@
         "phpsoftbox/http-message": "dev-master",
         "phpunit/phpunit": "^13.3"
     },
+    "suggest": {
+        "phpsoftbox/cli-app": "Required for the ozon:openapi:generate-dto DTO generator command (maintainer tooling).",
+        "phpsoftbox/code-generator": "Required for DTO generation from OpenAPI (maintainer tooling)."
+    },
     "autoload": {
         "psr-4": {
             "PhpSoftBox\\Ozon\\": "src/"

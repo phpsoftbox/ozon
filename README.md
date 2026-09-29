@@ -129,6 +129,16 @@ timeout и другие HTTP-статусы этот механизм не пе�
 Если в ответе присутствуют оба заголовка, клиент использует наибольшую задержку.
 Она также не может быть меньше fallback текущей попытки.
 
+Чтобы синхронный worker не засыпал на длительный cooldown (`Item-Retry-After` задаётся
+в минутах), по умолчанию действуют два бюджета:
+
+- одна задержка — не более 30 секунд (`maxDelaySeconds`);
+- сумма задержек одного вызова клиента — не более 60 секунд (`maxTotalDelaySeconds`).
+
+Задержка не обрезается до лимита: более ранний повтор противоречил бы заголовку. Вместо
+ожидания клиент выбрасывает `OzonException` со статусом 429 и payload последнего ответа.
+`null` в параметре отключает соответствующее ограничение.
+
 Для каждой попытки создаётся новый body stream из сохранённого JSON. Поэтому полностью
 прочитанное предыдущим PSR-18 вызовом тело не влияет на следующий запрос.
 
@@ -147,6 +157,8 @@ $client = new OzonApiClient(
     streamFactory: $streamFactory,
     rateLimitRetry: new RateLimitRetryOptions(
         maxAttempts: 4,
+        maxDelaySeconds: 30.0,
+        maxTotalDelaySeconds: 60.0,
         onRetry: static function (OzonRetryEvent $event): void {
             // Доступны attempt, delaySeconds, method, endpoint и statusCode.
         },
@@ -174,6 +186,9 @@ $retry = new RateLimitRetryOptions(
 Для сложных правил можно реализовать `RetryableRequestPolicyInterface`.
 
 ## Генерация DTO
+
+Генератор — инструмент сопровождения пакета: ему нужны `phpsoftbox/cli-app`, `phpsoftbox/code-generator`
+(в `suggest`, в `require` не входят). Клиенту API эти зависимости не нужны.
 
 DTO генерируются из локального `docs/swagger.json`:
 
